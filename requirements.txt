@@ -1,0 +1,4 @@
+flask
+yfinance
+waitress
+flask_cors
