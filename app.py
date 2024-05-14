@@ -8,7 +8,7 @@ CORS(app)
 
 # Define a dictionary to store authorized API keys
 authorized_keys = {
-    "12f5f96f-6b51-4b4a-9bf9-b23e6d728b39": "admin"
+    "b0ccdd40-9f04-4916-9309-59cdd76d02b1": "admin"
 }
 
 def calculate_resistance_support(previous_close, real_time_price):
@@ -32,24 +32,56 @@ def get_stock_price():
     if not stock_name:
         return jsonify({'error': 'Stock name not provided'}), 400
     
-    # Append ".NS" to the stock name
+    # Check if the stock symbol is "^NSEI" or other supported indexes
+    supported_indexes = ["^NSEI", "^NSEBANK", "^BSESN", ]
+    if stock_name.upper() in supported_indexes:
+        try:
+            index_data = yf.Ticker(stock_name.upper())
+            current_data = index_data.history(period='1d')
+            previous_data = index_data.history(period='2d')
+            real_time_price = current_data.iloc[-1]['Close']
+            previous_close = previous_data.iloc[-2]['Close']
+            open_price = current_data.iloc[0]['Open']
+            high = current_data['High'].max()
+            low = current_data['Low'].min()
+            fifty_two_week_high = index_data.info.get('fiftyTwoWeekHigh')
+            fifty_two_week_low = index_data.info.get('fiftyTwoWeekLow')
+            volume = current_data.iloc[-1]['Volume']
+            
+            resistance1, resistance2, resistance3, support1, support2, support3, percentage_change = calculate_resistance_support(previous_close, real_time_price)
+
+            return jsonify({
+                'percentage_change': percentage_change,
+                'real_time_price': real_time_price,
+                'previous_close': previous_close,
+                'resistance1': resistance1,
+                'resistance2': resistance2,
+                'resistance3': resistance3,
+                'support1': support1,
+                'support2': support2,
+                'support3': support3,
+                'fifty_two_week_high': fifty_two_week_high,
+                'fifty_two_week_low': fifty_two_week_low,
+                'volume': volume,
+                'open': open_price,
+                'high': high,
+                'low': low
+            })
+        except Exception as e:
+            return jsonify({'error': str(e)}), 500
+    
+    # Append ".NS" to the stock name for regular stocks
     nse_stock = f"{stock_name.upper()}.NS"
 
     try:
         stock_data = yf.Ticker(nse_stock)
-        # Fetch data for the last two trading days
         historical_data = stock_data.history(period='2d')
-        # Extract the closing price for the previous trading day
         previous_close = historical_data.iloc[-2]['Close']
-        # Fetch full name of the stock
         stock_full_name = stock_data.info['longName']
 
-        # Get real-time data
         real_time_data = stock_data.history(period='1d')
 
-        # Extract real-time price
         real_time_price = real_time_data.iloc[-1]['Close']
-        # Extract other information
         open_price = real_time_data.iloc[-1]['Open']
         high = real_time_data.iloc[-1]['High']
         low = real_time_data.iloc[-1]['Low']
@@ -58,14 +90,12 @@ def get_stock_price():
         volume = real_time_data.iloc[-1]['Volume']
         market_cap = stock_data.info.get('marketCap')
 
-        # Convert market cap to crores
         market_cap_in_crores = market_cap / 1e7
 
-        # Calculate resistance and support levels
         resistance1, resistance2, resistance3, support1, support2, support3, percentage_change = calculate_resistance_support(previous_close, real_time_price)
 
         return jsonify({
-            'Percentage_Change': percentage_change,
+            'percentage_change': percentage_change,
             'real_time_price': real_time_price,
             'open_price': open_price,
             'high': high,
@@ -73,9 +103,9 @@ def get_stock_price():
             'fifty_two_week_high': fifty_two_week_high,
             'fifty_two_week_low': fifty_two_week_low,
             'volume': volume,
-            'market_cap (in crores)': market_cap_in_crores,
+            'market_cap_in_crores': market_cap_in_crores,
             'stock_full_name': stock_full_name,
-            'stock_name': stock_name,  # Returning the modified stock name with ".NS"
+            'stock_name': stock_name,  # Returning the modified stock name with ".NS" if applicable
             'previous_close': previous_close,
             'resistance1': resistance1,
             'resistance2': resistance2,
