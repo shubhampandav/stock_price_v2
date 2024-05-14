@@ -18,8 +18,8 @@ def calculate_resistance_support(previous_close, real_time_price):
     support1 = (previous_close ** 0.5 - 0.125) ** 2
     support2 = (previous_close ** 0.5 - 0.25) ** 2
     support3 = (previous_close ** 0.5 - 0.5) ** 2
-    percentage_change = ((real_time_price - previous_close) / previous_close) * 100
-    return resistance1, resistance2, resistance3, support1, support2, support3, percentage_change
+    Percentage_Change = ((real_time_price - previous_close) / previous_close) * 100
+    return resistance1, resistance2, resistance3, support1, support2, support3, Percentage_Change
 
 @app.route('/stock', methods=['GET'])
 def get_stock_price():
@@ -48,10 +48,10 @@ def get_stock_price():
             fifty_two_week_low = index_data.info.get('fiftyTwoWeekLow')
             volume = current_data.iloc[-1]['Volume']
             
-            resistance1, resistance2, resistance3, support1, support2, support3, percentage_change = calculate_resistance_support(previous_close, real_time_price)
+            resistance1, resistance2, resistance3, support1, support2, support3, Percentage_Change = calculate_resistance_support(previous_close, real_time_price)
 
             return jsonify({
-                'percentage_change': percentage_change,
+                'Percentage_Change': Percentage_Change,
                 'real_time_price': real_time_price,
                 'previous_close': previous_close,
                 'resistance1': resistance1,
@@ -63,7 +63,7 @@ def get_stock_price():
                 'fifty_two_week_high': fifty_two_week_high,
                 'fifty_two_week_low': fifty_two_week_low,
                 'volume': volume,
-                'open': open_price,
+                'open_price': open_price,
                 'high': high,
                 'low': low
             })
@@ -92,10 +92,10 @@ def get_stock_price():
 
         market_cap_in_crores = market_cap / 1e7
 
-        resistance1, resistance2, resistance3, support1, support2, support3, percentage_change = calculate_resistance_support(previous_close, real_time_price)
+        resistance1, resistance2, resistance3, support1, support2, support3, Percentage_Change = calculate_resistance_support(previous_close, real_time_price)
 
         return jsonify({
-            'percentage_change': percentage_change,
+            'Percentage_Change': Percentage_Change,
             'real_time_price': real_time_price,
             'open_price': open_price,
             'high': high,
