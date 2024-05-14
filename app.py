@@ -33,7 +33,7 @@ def get_stock_price():
         return jsonify({'error': 'Stock name not provided'}), 400
     
     # Check if the stock symbol is "^NSEI" or other supported indexes
-    supported_indexes = ["^NSEI", "^NSEBANK", "^BSESN"]
+    supported_indexes = ["^NSEI", "^NSEBANK", "^BSESN", ]
     if stock_name.upper() in supported_indexes:
         try:
             index_data = yf.Ticker(stock_name.upper())
